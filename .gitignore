@@ -1,0 +1,8 @@
+# Java kompilerte filer
+*.class
+
+# Genererte guider (vi vil bare ha koden, ikke resultatene)
+Setup_Guide_*.md
+
+# Logger
+*.log
