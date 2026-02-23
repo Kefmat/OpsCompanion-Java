@@ -1,45 +1,66 @@
-# OpsCompanion: System Administration & Onboarding Automator
+# OpsCompanion: Modular System Administration & MBSE Integration
 
 ## Project Overview
-OpsCompanion is a Java-based utility designed to streamline the technical onboarding process for engineering teams. The tool automates workstation diagnostics, verifies environment configurations, and generates project-specific documentation to ensure compliance with technical standards.
+OpsCompanion is a professional Java-based utility designed to streamline technical onboarding and system validation. The project has been refactored into a modular architecture to demonstrate high-quality software engineering principles such as **Separation of Concerns (SoC)** and **Single Responsibility**.
 
 ## System Architecture
-The following diagram illustrates the data flow and system interaction:
+The application is divided into specialized modules, ensuring the system is scalable and easy to maintain.
 
 ```mermaid
 graph TD
-    A[users.csv] -->|Input Data| B[OpsManager Engine]
-    C[System Environment] -->|Runtime Checks| B
-    B -->|Generates| D[Markdown Setup Guides]
-    B -->|Appends| E[Audit Log]
-    B -->|Console| F[User Interface]
+    Main[OpsManager] --> Auth[CSV Database]
+    Main --> Val[SystemValidator]
+    Main --> Net[NetworkChecker]
+    Main --> Exp[Exporter]
+    
+    Val -->|OS Checks| MD[Markdown Report]
+    Net -->|Connectivity| MD
+    Exp -->|IO Operations| MD
+    Exp -->|SysML Standards| XMI[XMI Model Export]
+    Exp -->|Security| Log[Audit Log]
 ```
+
+### Modular Structure
+
+- **OpsManager (Orchestrator):** The main entry point that coordinates the workflow between modules.
+
+- **SystemValidator:** Executes runtime diagnostics of the local environment (JDK, Git, Environment Variables).
+
+- **NetworkChecker:** A connectivity suite that verifies access to critical infrastructure and license servers.
+
+- **Exporter:** Handles multi-format data generation, including human-readable documentation and machine-readable models.
+
+- **UserConfig:** The data model representing engineer profiles and project-specific requirements.
+
 
 ### Technical Features
 
-- **Automated Workstation Diagnostics:** Executes system calls to verify the operational status of Java JDK, Node.js, and Git version control.
-- **Environment Configuration Control:** Validates critical environment variables such as `JAVA_HOME` to prevent configuration-related downtime.
-- **Dynamic Documentation Generation:** Produces individualized onboarding guides based on user roles and assigned projects.
-- **Security & Auditability:** Maintains an encrypted-entry audit log for tracking administrative actions and system access attempts.
+- **MBSE Interoperability:** Generates XMI (XML Metadata Interchange) files compatible with UML/SysML tools like Eclipse Papyrus.
+
+- **Infrastructure Verification:** Real-time ICMP/Ping diagnostics to ensure developer workstations can reach required servers.
+
+- **Automated Documentation:** Generates personalized Markdown guides based on role-specific data from a CSV backend.
+
+- **Traceability:** Implements a persistent audit log for administrative compliance and security tracking.
+
 
 ### Process Flow
 The application follows a structured sequence to ensure data integrity:
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant App as OpsManager
-    participant FS as File System
+    participant Admin
+    participant Main as OpsManager
     participant OS as Operating System
+    participant Net as Network
+    participant FS as File System
 
-    User->>App: Input Employee Name
-    App->>FS: Query users.csv
-    FS-->>App: Return Role & Project Data
-    App->>OS: Execute System Checks (java, node, git)
-    OS-->>App: Return Exit Codes
-    App->>FS: Write MD Setup Guide
-    App->>FS: Update audit.log
-    App-->>User: Display Success/Failure
+    Admin->>Main: Provide Employee Name
+    Main->>FS: Query users.csv
+    Main->>OS: Validate Toolchain (Java/Git)
+    Main->>Net: Verify License Server Access
+    Main->>FS: Generate .md & .xmi files
+    Main-->>Admin: Onboarding Successful
 ```
 
 ## Requirements and Execution
