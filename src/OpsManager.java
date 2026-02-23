@@ -2,11 +2,14 @@ package src;
 
 import java.io.*;
 import java.util.*;
+import java.nio.file.*;
 import java.util.Date;
 
 /**
  * OpsManager: Et profesjonelt verktøy for automatisert onboarding og feilsøking.
  * Verktøyet validerer lokal maskinkonfigurasjon og genererer tekniske guider.
+ * * Inkluderer nå MBSE-støtte via XMI-eksport for integrasjon mot modelleringsverktøy
+ * som Eclipse Papyrus og MagicDraw.
  */
 public class OpsManager {
 
@@ -22,8 +25,13 @@ public class OpsManager {
         UserConfig user = findUserInCsv(targetUser);
 
         if (user != null) {
+            // Genererer menneske-lesbar dokumentasjon
             generateOnboardingReport(user);
-            logAction("SUCCESS: Onboarding rapport generert for " + targetUser);
+            
+            // Genererer maskin-lesbar systemmodell (SysML/XMI)
+            exportToXMI(user);
+            
+            logAction("SUCCESS: Onboarding rapport og XMI-modell generert for " + targetUser);
         } else {
             System.out.println("[ERROR] Bruker ikke funnet i databasen.");
             logAction("FAILED: Forsøk på onboarding av ukjent bruker: " + targetUser);
@@ -31,6 +39,10 @@ public class OpsManager {
         sc.close();
     }
 
+    /**
+     * Leser rådata fra CSV-database. 
+     * Implementerer grunnleggende parsing av semikolon-separerte verdier.
+     */
     private static UserConfig findUserInCsv(String name) {
         try (BufferedReader br = new BufferedReader(new FileReader("users.csv"))) {
             String line;
@@ -47,6 +59,10 @@ public class OpsManager {
         return null;
     }
 
+    /**
+     * Produserer en personlig Markdown-guide.
+     * Bruker system-diagnostikk for å gi sanntids feedback til brukeren.
+     */
     private static void generateOnboardingReport(UserConfig user) {
         String fileName = "Setup_Guide_" + user.navn.replace(" ", "_") + ".md";
         
@@ -80,6 +96,34 @@ public class OpsManager {
         }
     }
 
+    /**
+     * Eksporterer brukerdata til XMI (XML Metadata Interchange).
+     * Dette muliggjør interoperabilitet med MBSE-verktøy og Eclipse Modeling Framework (EMF).
+     */
+    private static void exportToXMI(UserConfig user) {
+        String fileName = "User_Model_" + user.navn.replace(" ", "_") + ".xmi";
+        try (PrintWriter writer = new PrintWriter(new FileWriter(fileName))) {
+            writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            writer.println("<xmi:XMI xmi:version=\"2.1\" xmlns:xmi=\"http://schema.omg.org/spec/XMI/2.1\" xmlns:uml=\"http://www.eclipse.org/uml2/3.0.0/UML\">");
+            writer.println("  <uml:Package xmi:id=\"_" + System.currentTimeMillis() + "\" name=\"OnboardingModels\">");
+            writer.println("    <packagedElement xmi:type=\"uml:Actor\" xmi:id=\"user_" + user.navn.hashCode() + "\" name=\"" + user.navn + "\">");
+            writer.println("      <eAnnotations source=\"Metadata\">");
+            writer.println("        <details key=\"Role\" value=\"" + user.rolle + "\"/>");
+            writer.println("        <details key=\"Project\" value=\"" + user.prosjekt + "\"/>");
+            writer.println("      </eAnnotations>");
+            writer.println("    </packagedElement>");
+            writer.println("  </uml:Package>");
+            writer.println("</xmi:XMI>");
+            
+            System.out.println("[MBSE] XMI Modell-fil generert for SysML-import: " + fileName);
+        } catch (IOException e) {
+            System.err.println("[ERROR] Kunne ikke generere XMI-fil.");
+        }
+    }
+
+    /**
+     * Utfører runtime-eksekvering av systemkommandoer for å validere installert programvare.
+     */
     private static void checkTool(PrintWriter writer, String cmd, String toolName) {
         try {
             Process p = Runtime.getRuntime().exec(cmd);
@@ -93,6 +137,9 @@ public class OpsManager {
         }
     }
 
+    /**
+     * Verifiserer systemets miljøvariabler for å sikre korrekt verktøy-konfigurasjon.
+     */
     private static void checkEnvVar(PrintWriter writer, String varName) {
         String value = System.getenv(varName);
         if (value != null) {
@@ -102,6 +149,9 @@ public class OpsManager {
         }
     }
 
+    /**
+     * Logger administrative hendelser til en audit-fil for sporbarhet og sikkerhet.
+     */
     private static void logAction(String action) {
         try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("audit.log", true)))) {
             out.println("[" + new Date() + "] " + action);
