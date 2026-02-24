@@ -1,7 +1,11 @@
 # OpsCompanion: Modular System Administration & MBSE Integration
 
+<img width="659" height="437" alt="1f4dc0542015970ee05b55596209479b" src="https://github.com/user-attachments/assets/8d51e7e8-51f4-42c0-9ad8-cccff275d75b" />
+
 ## Project Overview
 OpsCompanion is a professional Java-based utility designed to streamline technical onboarding and system validation. The project has been refactored into a modular architecture to demonstrate high-quality software engineering principles such as **Separation of Concerns (SoC)** and **Single Responsibility**.
+
+<img width="636" height="268" alt="e2532272471f6bef250a2af31c7c6bfd" src="https://github.com/user-attachments/assets/fdbb600b-3cf3-462f-b725-2cd593f3da93" />
 
 ## System Architecture
 The application is divided into specialized modules, ensuring the system is scalable and easy to maintain.
